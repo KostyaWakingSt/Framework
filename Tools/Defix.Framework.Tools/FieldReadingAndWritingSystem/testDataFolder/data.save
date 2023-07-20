@@ -1,0 +1,14 @@
+[TestSaveHeader]
+testEnum: One
+testEnum2: TestType
+OtherVar2: 1
+testWriteClass: 100
+[/TestSaveHeader]
+
+[12345]
+testEnum: One
+testEnum2: TestType
+OtherVar2: 1
+testWriteClass: 100
+[/12345]
+

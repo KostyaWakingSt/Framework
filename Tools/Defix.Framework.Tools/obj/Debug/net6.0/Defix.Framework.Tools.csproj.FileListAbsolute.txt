@@ -1,0 +1,15 @@
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\bin\Debug\net6.0\Defix.Framework.Tools.exe
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\bin\Debug\net6.0\Defix.Framework.Tools.deps.json
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\bin\Debug\net6.0\Defix.Framework.Tools.runtimeconfig.json
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\bin\Debug\net6.0\Defix.Framework.Tools.dll
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\bin\Debug\net6.0\Defix.Framework.Tools.pdb
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\obj\Debug\net6.0\Defix.Framework.Tools.csproj.AssemblyReference.cache
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\obj\Debug\net6.0\Defix.Framework.Tools.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\obj\Debug\net6.0\Defix.Framework.Tools.AssemblyInfoInputs.cache
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\obj\Debug\net6.0\Defix.Framework.Tools.AssemblyInfo.cs
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\obj\Debug\net6.0\Defix.Framework.Tools.csproj.CoreCompileInputs.cache
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\obj\Debug\net6.0\Defix.Framework.Tools.dll
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\obj\Debug\net6.0\refint\Defix.Framework.Tools.dll
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\obj\Debug\net6.0\Defix.Framework.Tools.pdb
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\obj\Debug\net6.0\Defix.Framework.Tools.genruntimeconfig.cache
+C:\Users\ко\source\repos\Defix.Framework.Tools\Defix.Framework.Tools\obj\Debug\net6.0\ref\Defix.Framework.Tools.dll
