@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Defix.Framework.Tools.FieldReadingAndWritingSystem
 {
@@ -60,6 +62,104 @@ namespace Defix.Framework.Tools.FieldReadingAndWritingSystem
             writer.Close();
         }
 
+        public void WriteNewFieldData(string header, FieldsReader.Field oldData, FieldsReader.Field newData)
+        {
+            FieldsReader reader = new(_pathToWriteFile);
+            int currentFieldIndex = reader.GetIndexFromFieldData(header, oldData);
+
+            string[] allLines = File.ReadAllLines(_pathToWriteFile);
+            allLines[currentFieldIndex] = allLines[currentFieldIndex].Replace($"{oldData.Name}: {oldData.Value}", $"{newData.Name}: {newData.Value}");
+
+            File.WriteAllLines(_pathToWriteFile, allLines);
+        }
+
+        public void ReWrite()
+        {
+            Dictionary<string, List<FieldsReader.Field>> fieldsToCompare = new();
+            Dictionary<string, List<FieldsReader.Field>> fieldsToWrite = new();
+
+            WriteAllFieldsToDictionary(ref fieldsToWrite);
+            WriteAllCompareFieldsToDictionary(ref fieldsToCompare);
+            ReWriteDataBetween(ref fieldsToWrite, ref fieldsToCompare);
+
+            foreach (var field in _fieldsDatas)
+            {
+                WriteFieldsToHeader(fieldsToWrite[field.Header].ToArray(), field.Header);
+            }
+        }
+
+        private void WriteAllFieldsToDictionary(ref Dictionary<string, List<FieldsReader.Field>> fieldsToWrite)
+        {
+            foreach (var fieldData in _fieldsDatas)
+            {
+                List<FieldsReader.Field> localFields = new();
+
+                foreach (var fields in FieldsReader.GetFieldsByHeader(GetFieldsArray(), fieldData.Header))
+                {
+                    localFields.Add(fields);
+                }
+
+                fieldsToWrite.Add(fieldData.Header, localFields);
+            }
+        }
+
+        private void WriteAllCompareFieldsToDictionary(ref Dictionary<string, List<FieldsReader.Field>> fieldsToCompare)
+        {
+            FieldsReader reader = new(_pathToWriteFile);
+
+            foreach (var fieldData in _fieldsDatas)
+            {
+                fieldsToCompare.Add(fieldData.Header, reader.GetFieldsByHeader(fieldData.Header).ToList());
+            }
+        }
+
+        private void ReWriteDataBetween(ref Dictionary<string, List<FieldsReader.Field>> from, ref Dictionary<string, List<FieldsReader.Field>> to)
+        {
+            foreach (var fieldData in _fieldsDatas)
+            {
+                for (int i = 0; i < to.Count; i++)
+                {
+                    for (int j = 0; j < to[fieldData.Header].Count; j++)
+                    {
+                        from[fieldData.Header][j] = to[fieldData.Header][j];
+                    }
+                }
+            }
+        }
+
+        private string[] GetFieldsArray()
+        {
+            StringBuilder builder = new();
+
+            WriteFields(ref builder);
+
+            return builder.ToString().ToLinesArray();
+        }
+
+        private void WriteFieldsToHeader(FieldsReader.Field[] fields, string header)
+        {
+            StringBuilder builder = new();
+            FieldsReader reader = new(_pathToWriteFile);
+            bool append = false;
+
+            if (!reader.HasHeaderInPath(header))
+                append = true;
+
+            StreamWriter writer = new(_pathToWriteFile, append)
+            {
+                AutoFlush = true
+            };
+
+            builder.Append(GetStartHeaderFormat(header));
+            foreach (var field in fields)
+            {
+                WriteInfoInBuilder(ref builder, field.Name, field.Value);
+            }
+            builder.Append(GetEndHeaderFormat(header));
+
+            writer.WriteAsync(builder.ToString());
+        }
+
         private void WriteFields(ref StringBuilder builder)
         {
             foreach (var fieldsData in _fieldsDatas)
@@ -67,12 +167,12 @@ namespace Defix.Framework.Tools.FieldReadingAndWritingSystem
                 if (!fieldsData.ObjectToWrite.HasWriteAttributes())
                     throw new ArgumentNullException("The class has no write attributes.");
 
-                builder.Append($"[{fieldsData.Header}]\n");
+                builder.Append(GetStartHeaderFormat(fieldsData.Header));
 
                 WriteFieldVariables(ref builder, fieldsData.ObjectToWrite);
                 WritePropertyVariables(ref builder, fieldsData.ObjectToWrite);
 
-                builder.Append($"[/{fieldsData.Header}]\n\n");
+                builder.Append(GetEndHeaderFormat(fieldsData.Header));
             }
         }
 
@@ -109,31 +209,73 @@ namespace Defix.Framework.Tools.FieldReadingAndWritingSystem
         {
             builder.Append($"{name}: {value}\n");
         }
+
+        private static string GetStartHeaderFormat(string header)
+        {
+            return $"[{header}]\n";
+        }
+
+        private static string GetEndHeaderFormat(string header)
+        {
+            return $"[/{header}]\n\n";
+        }
     }
 
     internal static class ClassToWriteValidator
     {
+        private const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public;
+
+        public static bool HasLoadAttributes(this object obj)
+        {
+            return CheckFields(obj, typeof(LoadDataAttribute)) || CheckProperties(obj, typeof(LoadDataAttribute));
+        }
+
         public static bool HasWriteAttributes(this object obj)
         {
-            return CheckFields(obj) || CheckProperties(obj);
+            return CheckFields(obj, typeof(CanWriteAttribute)) || CheckProperties(obj, typeof(CanWriteAttribute));
         }
 
-        private static bool CheckFields(object obj)
+        private static bool CheckFields(object obj, Type attribute)
         {
-            foreach (var field in obj.GetType().GetFields())
-                if (Attribute.IsDefined(field, typeof(CanWriteAttribute)))
+            foreach (var field in obj.GetType().GetFields(Flags))
+                if (Attribute.IsDefined(field, attribute))
                     return true;
 
             return false;
         }
 
-        private static bool CheckProperties(object obj)
+        private static bool CheckProperties(object obj, Type attribute)
         {
-            foreach (var field in obj.GetType().GetProperties())
-                if (Attribute.IsDefined(field, typeof(CanWriteAttribute)))
+            foreach (var field in obj.GetType().GetProperties(Flags))
+                if (Attribute.IsDefined(field, attribute))
                     return true;
 
             return false;
+        }
+    }
+
+    internal static class StringExtension
+    {
+        public static string[] ToLinesArray(this string value)
+        {
+            List<string> outputLines = new();
+            char[] charsArray = value.ToCharArray();
+
+            string line = string.Empty;
+            for (int i = 0; i < charsArray.Length; i++)
+            {
+                if (charsArray[i] == '\n')
+                {
+                    outputLines.Add(line);
+                    line = string.Empty;
+                }
+                else
+                {
+                    line += charsArray[i];
+                }
+            }
+
+            return outputLines.ToArray();
         }
     }
 

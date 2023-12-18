@@ -22,4 +22,17 @@ namespace Defix.Framework.Tools.FieldReadingAndWritingSystem
             Key = key;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
+    internal class LoadDataAttribute : Attribute
+    {
+        public string Key { get; private set; } = string.Empty;
+        public string Header { get; private set; } = string.Empty;
+
+        public LoadDataAttribute(string key, string header)
+        {
+            Key = key;
+            Header = header;
+        }
+    }
 }
